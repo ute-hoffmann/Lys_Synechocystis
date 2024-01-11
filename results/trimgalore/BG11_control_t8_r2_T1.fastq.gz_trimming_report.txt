@@ -1,0 +1,117 @@
+
+SUMMARISING RUN PARAMETERS
+==========================
+Input filename: BG11_control_t8_r2_T1.fastq.gz
+Trimming mode: single-end
+Trim Galore version: 0.6.7
+Cutadapt version: 3.4
+Python version: could not detect
+Number of cores used for trimming: 2
+Quality Phred score cutoff: 20
+Quality encoding type selected: ASCII+33
+Using Illumina adapter for trimming (count: 6126). Second best hit was smallRNA (count: 0)
+Adapter sequence: 'AGATCGGAAGAGC' (Illumina TruSeq, Sanger iPCR; auto-detected)
+Maximum trimming error rate: 0.1 (default)
+Minimum required adapter overlap (stringency): 6 bp
+Minimum required sequence length before a sequence gets removed: 20 bp
+Output file will be GZIP compressed
+
+
+This is cutadapt 3.4 with Python 3.9.6
+Command line parameters: -j 2 -e 0.1 -q 20 -O 6 -a AGATCGGAAGAGC BG11_control_t8_r2_T1.fastq.gz
+Processing reads on 2 cores in single-end mode ...
+Finished in 67.25 s (8 µs/read; 7.84 M reads/minute).
+
+=== Summary ===
+
+Total reads processed:               8,784,043
+Reads with adapters:                   104,892 (1.2%)
+Reads written (passing filters):     8,784,043 (100.0%)
+
+Total basepairs processed:   693,651,098 bp
+Quality-trimmed:               1,389,733 bp (0.2%)
+Total written (filtered):    688,959,049 bp (99.3%)
+
+=== Adapter 1 ===
+
+Sequence: AGATCGGAAGAGC; Type: regular 3'; Length: 13; Trimmed: 104892 times
+
+No. of allowed errors:
+1-9 bp: 0; 10-13 bp: 1
+
+Bases preceding removed adapters:
+  A: 5.2%
+  C: 93.6%
+  G: 1.1%
+  T: 0.1%
+  none/other: 0.0%
+WARNING:
+    The adapter is preceded by "C" extremely often.
+    The provided adapter sequence could be incomplete at its 5' end.
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+6	51	2144.5	0	51
+7	11	536.1	0	11
+8	341	134.0	0	341
+9	152	33.5	0	152
+10	215	8.4	1	133 82
+11	114	2.1	1	40 74
+12	37	0.5	1	8 29
+13	33	0.1	1	9 24
+14	123	0.1	1	40 83
+15	340	0.1	1	131 209
+16	211	0.1	1	78 133
+17	328	0.1	1	117 211
+18	79	0.1	1	33 46
+19	122	0.1	1	35 87
+20	57	0.1	1	23 34
+21	72	0.1	1	23 49
+22	11	0.1	1	3 8
+23	246	0.1	1	74 172
+24	787	0.1	1	248 539
+25	1342	0.1	1	454 888
+26	454	0.1	1	148 306
+27	2705	0.1	1	831 1874
+28	2769	0.1	1	936 1833
+29	10856	0.1	1	5485 5371
+30	6010	0.1	1	2658 3352
+31	14051	0.1	1	7008 7043
+32	11427	0.1	1	5726 5701
+33	26737	0.1	1	14377 12360
+34	15404	0.1	1	7094 8310
+35	7748	0.1	1	4816 2932
+36	796	0.1	1	499 297
+37	777	0.1	1	398 379
+38	239	0.1	1	125 114
+39	131	0.1	1	80 51
+40	35	0.1	1	21 14
+41	28	0.1	1	13 15
+42	7	0.1	1	4 3
+43	8	0.1	1	4 4
+44	3	0.1	1	0 3
+45	4	0.1	1	2 2
+47	4	0.1	1	0 4
+48	2	0.1	1	0 2
+49	2	0.1	1	0 2
+50	2	0.1	1	0 2
+51	1	0.1	1	1
+52	2	0.1	1	1 1
+53	1	0.1	1	0 1
+64	3	0.1	1	0 3
+75	1	0.1	1	1
+78	3	0.1	1	3
+79	8	0.1	1	6 2
+80	1	0.1	1	1
+82	1	0.1	1	0 1
+
+
+WARNING:
+    One or more of your adapter sequences may be incomplete.
+    Please see the detailed output above.
+
+RUN STATISTICS FOR INPUT FILE: BG11_control_t8_r2_T1.fastq.gz
+=============================================
+8784043 sequences processed in total
+Sequences removed because they became shorter than the length cutoff of 20 bp:	7 (0.0%)
+
