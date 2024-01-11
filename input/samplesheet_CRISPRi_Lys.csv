@@ -1,0 +1,9 @@
+sample,fastq_1,fastq_2,condition,replicate,time,group,reference_group
+BG11_control_t0_r1,input/fastq/Control_T0_I713_i509_S1_L001_R1_001.fastq.gz,,BG11_Control,1,0,1,1
+BG11_control_t0_r2,input/fastq/Control_T0_I721_i510_S2_L001_R1_001.fastq.gz,,BG11_Control,2,0,1,1
+BG11_control_t8_r1,input/fastq/Control_End_I721_i509_S9_L001_R1_001.fastq.gz,,BG11_Control,1,8,2,1
+BG11_control_t8_r2,input/fastq/Control_End_I720_i509_S10_L001_R1_001.fastq.gz,,BG11_Control,2,8,2,1
+Lys_t0_r1,input/fastq/Lys_T0_I715_i510_S7_L001_R1_001.fastq.gz,,BG11_Lys,1,0,3,3
+Lys_t0_r2,input/fastq/Lys_T0_I714_i510_S8_L001_R1_001.fastq.gz,,BG11_Lys,2,0,3,3
+Lys_t8_r1,input/fastq/Lys_End_I715_i509_S14_L001_R1_001.fastq.gz,,BG11_Lys,1,8,4,3
+Lys_t8_r2,input/fastq/Lys_End_I714_i509_S15_L001_R1_001.fastq.gz,,BG11_Lys,2,8,4,3
