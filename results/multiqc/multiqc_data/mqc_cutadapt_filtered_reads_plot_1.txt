@@ -1,0 +1,9 @@
+Sample	Reads passing filters
+BG11_control_t0_r1_T1	8400497.0
+BG11_control_t0_r2_T1	9006375.0
+BG11_control_t8_r1_T1	7259431.0
+BG11_control_t8_r2_T1	8784043.0
+Lys_t0_r1_T1	8692533.0
+Lys_t0_r2_T1	9241848.0
+Lys_t8_r1_T1	8866002.0
+Lys_t8_r2_T1	9044655.0

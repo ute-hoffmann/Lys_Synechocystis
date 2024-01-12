@@ -1,0 +1,9 @@
+Sample	Assigned
+BG11_control_t0_r1_T1	7048842.0
+BG11_control_t0_r2_T1	7538742.0
+BG11_control_t8_r1_T1	6020754.0
+BG11_control_t8_r2_T1	7334496.0
+Lys_t0_r1_T1	7269878.0
+Lys_t0_r2_T1	7735319.0
+Lys_t8_r1_T1	7513903.0
+Lys_t8_r2_T1	7621344.0

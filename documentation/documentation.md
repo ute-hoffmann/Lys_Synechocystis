@@ -21,5 +21,5 @@ Command for run with limma normalization:
 
 ```
 conda activate env_nf
-nextflow run ..pipelines/nf-core-crispriscreen/ -profile singularity --input "input/samplesheet_CRISPRi_Lys.csv" --fasta "input/Synechocystis_v2_trimmed.fasta" --outdir "results_limmaNormalization" --three_prime_adapter ^CAGTGATAGAGATACTGGGAGCTA...GTTTTAGAGCTAGAAATAGCAAGTTAAAATAAGGC --filter_mapq=1 --max_cpus 5 --max_memory 12GB --run_mageck true --gene_fitness true --normalization true
+nextflow run ../../pipelines/nf-core-crispriscreen/ -profile singularity --input "input/samplesheet_CRISPRi_Lys.csv" --fasta "input/Synechocystis_v2_trimmed.fasta" --outdir "results_limmaNormalization" --three_prime_adapter ^CAGTGATAGAGATACTGGGAGCTA...GTTTTAGAGCTAGAAATAGCAAGTTAAAATAAGGC --filter_mapq=1 --max_cpus 5 --max_memory 12GB --run_mageck true --gene_fitness true --normalization true
 ```

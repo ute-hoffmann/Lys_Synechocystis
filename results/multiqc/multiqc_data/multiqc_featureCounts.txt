@@ -1,0 +1,9 @@
+Sample	Total	Assigned	Unassigned_Unmapped	Unassigned_Read_Type	Unassigned_Singleton	Unassigned_MappingQuality	Unassigned_Chimera	Unassigned_FragmentLength	Unassigned_Duplicate	Unassigned_MultiMapping	Unassigned_Secondary	Unassigned_NonSplit	Unassigned_NoFeatures	Unassigned_Overlapping_Length	Unassigned_Ambiguity	percent_assigned
+BG11_control_t0_r1_T1	7048842	7048842	0	0	0	0	0	0	0	0	0	0	0	0	0	100.0
+BG11_control_t0_r2_T1	7538742	7538742	0	0	0	0	0	0	0	0	0	0	0	0	0	100.0
+BG11_control_t8_r1_T1	6020754	6020754	0	0	0	0	0	0	0	0	0	0	0	0	0	100.0
+BG11_control_t8_r2_T1	7334496	7334496	0	0	0	0	0	0	0	0	0	0	0	0	0	100.0
+Lys_t0_r1_T1	7269878	7269878	0	0	0	0	0	0	0	0	0	0	0	0	0	100.0
+Lys_t0_r2_T1	7735319	7735319	0	0	0	0	0	0	0	0	0	0	0	0	0	100.0
+Lys_t8_r1_T1	7513903	7513903	0	0	0	0	0	0	0	0	0	0	0	0	0	100.0
+Lys_t8_r2_T1	7621344	7621344	0	0	0	0	0	0	0	0	0	0	0	0	0	100.0
