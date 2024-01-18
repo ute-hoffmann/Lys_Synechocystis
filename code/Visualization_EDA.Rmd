@@ -41,7 +41,7 @@ load("../results/fitness/result.Rdata")
 
 ## Diagnostic plot to check if control sgRNAs look ok
 
-Several control sgRNAs are included in the CRISPRi library. These control sgRNAs do not target any specific gene and serve as a control. Here, most of them behave neutrally, except control sgRNA 6 under certain conditions. 
+Several control sgRNAs are included in the CRISPRi library. These control sgRNAs do not target any specific gene and serve as a control. Here, all of them behave neutrally.
 
 ```{r diagnostic-plot}
 plot_controls_sgRNAs <- DESeq_result_table %>% filter(grepl("ctrl", sgRNA_target)) %>%
@@ -84,7 +84,7 @@ write_tsv(df_red_wide, file="../R_results/Wide_DESeq_result_table.tsv")
 ## Visualization
 
 The weighted mean fitness value combines the values of the different sgRNAs targeting the same gene.
-Fitness-fitness plots were created to identify genes which behave differently when amino acids were added compared to the control cultivation. This was performed separately for ncRNAs and protein-coding genes.
+Fitness-fitness plots were created to identify genes which behave differently when lysine was added compared to the control cultivation. This was performed separately for ncRNAs and protein-coding genes.
 
 ### Protein-coding genes
 
@@ -95,7 +95,7 @@ df_red_no_ncRNAs <- subset(df_reduced, !grepl("nc_", df_reduced$sgRNA_target))
 df_red_wide <- pivot_wider(df_red_no_ncRNAs,names_from="condition", values_from=c("wmean_fitness"))
 ```
 
-```{r fitness-fitness-plots}
+```{r fitness-fitness-plots-function, echo=FALSE}
 plot_fitness_fitness <- function(df_input, y_axis, y_axis_label, x_axis="BG11_Control", x_axis_label="Weighted mean fitness BG11 Control", filename_save="../R_results/wfitnes_plot.pdf"){
   df_input$diff <- "NO"
   df_input$diff[(df_input[[x_axis]] - df_input[[y_axis]] > 2.5) | (df_input[[x_axis]] - df_input[[y_axis]] < (-2.5))] <- "YES"
@@ -109,7 +109,9 @@ plot_fitness_fitness <- function(df_input, y_axis, y_axis_label, x_axis="BG11_Co
   ggsave(filename = filename_save, plot=p, width=12, height=12, units="cm")
 return(p)
 }
+```
 
+```{r fitness-fitness-plots}
 plot_fitness_fitness(df_red_wide, "BG11_Lys", y_axis_label="Weighted mean fitness lysine", filename_save = "../R_results/Lys_control_wfitness.pdf")
 ```
 
@@ -118,8 +120,116 @@ plot_fitness_fitness(df_red_wide, "BG11_Lys", y_axis_label="Weighted mean fitnes
 These include antisense RNAs, but also other ncRNAs.
 
 ```{r fitness-fitness-plots-ncRNAs}
-df_red_wide <- pivot_wider(df_red_ncRNAs,names_from="condition", values_from=c("wmean_fitness"))
-plot_fitness_fitness(df_red_wide, "BG11_Lys", y_axis_label="Weighted mean fitness lysine", filename_save = "../R_results/ncRNA_Lys_control_wfitness.pdf")
+df_red_wide_ncRNAs <- pivot_wider(df_red_ncRNAs,names_from="condition", values_from=c("wmean_fitness"))
+plot_fitness_fitness(df_red_wide_ncRNAs, "BG11_Lys", y_axis_label="Weighted mean fitness lysine", filename_save = "../R_results/ncRNA_Lys_control_wfitness.pdf")
+```
+
+## Gene set enrichment analysis
+
+Functional enrichment analyses and gene set enrichment analyses help to check if a certain pathway or specific group of genes is especially affected by a treatment. Here, gene set enrichment analyses were performed for either Gene Ontology terms or KEGG pathways. To perform a gene set enrichment analysis, genes are sorted according to some measure, e.g. the log2FC after a certain time or the calculated fitness. Here, we used the weighted fitness of several sgRNAs as measure.
+The mapping of locus tags to Gene Ontology terms was downloaded from UniProt on the 18th Jan. 2024.
+There is the possibility to somehow weigh the adjusted p value in these calculation, e.g. by multiplying the weighted mean with the adjusted p value. 
+Here, only the first few rows of each table is given. Full tables with all found terms/pathways are available.
+
+```{r GSEA-functional-definitions, echo=FALSE}
+### code functional enrichment function
+  
+# read in term_to_gene and term_to_name for enricher()
+term_to_gene <- read.table("../input/2024-01-18_GOterms_slrIdentifier.tsv", sep="\t", header=T)
+term_to_gene <- term_to_gene[,c(2,1)]
+names(term_to_gene) <- c("GO_ID", "locus_tag")
+
+term_to_name <- read.delim("../input/term_to_name.csv", sep="\t", header=T)
+
+  browseKEGGNew_3 <- function (x, pathID, cluster_number) 
+{
+  url <- paste0("http://www.kegg.jp/kegg-bin/show_pathway?", 
+                pathID, "/", x[cluster_number][11])
+  browseURL(url)
+  invisible(url)
+  }
+  
+columns_to_show  <- c(2,3,4,5,7,8)
+columns_to_show_KEGG <- c(1,2,3,4,7)
+```
+
+In a first step, GSEAs were calculated for the control and the Lys-treated CRISPRi libraries separately. The depletion of essential pathways related to "Ribosomes" or "photosynthesis" is a first good quality measure for a CRISPRi screen.
+
+### BG11 Control, no amino acid added
+
+```{r GSEAs-control}
+DESeq_result_table_control <- unique(subset(DESeq_result_table, DESeq_result_table$condition=="BG11_Control" & DESeq_result_table$time==8)[c("wmean_fitness", "locus")])
+geneList <- DESeq_result_table_control$wmean_fitness
+names(geneList) <- DESeq_result_table_control$locus
+geneList = sort(geneList, decreasing = TRUE)
+set.seed(513)
+go_gsea_object <- GSEA(geneList, TERM2GENE = term_to_gene, TERM2NAME=term_to_name, seed=TRUE)
+print(head(go_gsea_object)[,columns_to_show])
+write.csv(go_gsea_object, "../R_results/GSEA_output/GO_GSEA_CRISPRi_control.csv")
+
+set.seed(914)
+kegg_gsea_object <- gseKEGG(geneList, organism="syn", minGSSize=10, pvalueCutoff = 0.05, seed=TRUE)
+print(head(kegg_gsea_object)[,columns_to_show_KEGG])
+write.csv(kegg_gsea_object, "../R_results/GSEA_output/KEGG_GSEA_CRISPRi_control.csv")
+```
+
+### Lys added
+
+```{r GSEAs-Lys}
+DESeq_result_table_Lys <- unique(subset(DESeq_result_table, DESeq_result_table$condition=="BG11_Lys" & DESeq_result_table$time==8)[c("wmean_fitness", "locus")])
+geneList <- DESeq_result_table_Lys$wmean_fitness
+names(geneList) <- DESeq_result_table_Lys$locus
+geneList = sort(geneList, decreasing = TRUE)
+set.seed(513)
+go_gsea_object <- GSEA(geneList, TERM2GENE = term_to_gene, TERM2NAME=term_to_name, seed=TRUE)
+print(head(go_gsea_object)[,columns_to_show])
+write.csv(go_gsea_object, "../R_results/GSEA_output/GO_GSEA_CRISPRi_Lys.csv")
+
+set.seed(914)
+kegg_gsea_object <- gseKEGG(geneList, organism="syn", minGSSize=10, pvalueCutoff = 0.05, seed=TRUE)
+print(head(kegg_gsea_object)[,columns_to_show_KEGG])
+write.csv(kegg_gsea_object, "../R_results/GSEA_output/KEGG_GSEA_CRISPRi_Lys.csv")
+```
+
+### Difference between control and Lys treatment
+
+In a next step, we tried to check which GO terms or KEGG pathways show a divergent enrichment or depletion in the two libraries. For this, weighted fitness means belonging to the two conditions were subtracted from each other. These differences were used as input for the GSEA.
+
+```{r GSEAs-difference}
+df_difference <- unique(subset(DESeq_result_table, DESeq_result_table$time==8 & !is.na(DESeq_result_table$locus))[,c("condition", "wmean_fitness", "locus")])
+df_difference_wide <- pivot_wider(df_difference, names_from=condition, values_from=wmean_fitness)
+df_difference_wide$difference <- df_difference_wide$BG11_Control - df_difference_wide$BG11_Lys
+
+geneList <- df_difference_wide$difference
+names(geneList) <- df_difference_wide$locus
+geneList = sort(geneList, decreasing = TRUE)
+set.seed(513)
+go_gsea_object <- GSEA(geneList, TERM2GENE = term_to_gene, TERM2NAME=term_to_name, seed=TRUE)
+print(head(go_gsea_object)[,columns_to_show])
+write.csv(go_gsea_object, "../R_results/GSEA_output/GO_GSEA_difference_control_Lys.csv")
+
+set.seed(914)
+kegg_gsea_object <- gseKEGG(geneList, organism="syn", minGSSize=10, pvalueCutoff = 0.05, seed=TRUE)
+print(head(kegg_gsea_object)[,columns_to_show_KEGG])
+write.csv(kegg_gsea_object, "../R_results/GSEA_output/KEGG_GSEA_difference_control_Lys.csv")
+```
+
+Results for the comparison of the two libraries were visualized. These plots are separated in three panels. The lowest panel ("Ranked List Metric") shows the metric according to which the genes were sorted. In this case, this was the weighted fitness mean associated with the different genes. The upper panel shows the running enrichment score of terms/pathways which were enriched/depleted in a statistically significant manner. The middle panel shows where the genes associated with these terms are located within the ranked list of genes in the same color code as used in the upper panel.
+It is worth mentioning that some GO terms, such as "ATP binding", "cytoplasm" and "membrane" encompass gigantic gene sets. Same holds for some KEGG terms, e.g. "Biosynthesis of secondary metabolites" or "Biosynthesis of cofactors". I am personally always not quite sure how meaniningful it is if such huge sets are enriched or depleted.
+
+```{r GSEAs-difference-visualization-etc}
+p <- gseaplot2(go_gsea_object, geneSetID =1:10)
+p
+ggsave("../R_results/GSEA_output/GO_GSEA_differences.pdf", plot=p, width=20, height=30, units="cm")
+p <- gseaplot2(kegg_gsea_object, geneSetID =1:7)
+p
+ggsave("../R_results/GSEA_output/KEGG_GSEA_differences.pdf", plot=p, width=15, height=18, units="cm")
+# browseKEGGNew_3(kegg_gsea_object, "syn03010", 1)
+# browseKEGGNew_3(kegg_gsea_object, "syn01240", 2)
+# browseKEGGNew_3(kegg_gsea_object, "syn01110", 3)
+# browseKEGGNew_3(kegg_gsea_object, "syn00970", 4)
+# browseKEGGNew_3(kegg_gsea_object, "syn01210", 5)
+# browseKEGGNew_3(kegg_gsea_object, "syn00290", 6)
 ```
 
 # Session info {.unnumbered}
