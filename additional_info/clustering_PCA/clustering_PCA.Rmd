@@ -1,0 +1,170 @@
+---
+title: "Clustering & PCA"
+author: "SYSTEM: `r version[13]`"
+date: "DATE: `r Sys.time()`"
+output:
+  pdf_document:
+    toc: yes
+    number_sections: true
+  html_notebook:
+    theme: cosmo
+    toc: yes
+    number_sections: yes
+  html_document:
+    toc: yes
+    df_print: paged
+---
+
+```{r setup, include = FALSE}
+require("knitr")
+opts_knit$set(root.dir = "~/Documents/Manuscripts/2024-01_Khaled_lysine/2024-01_Lys/additional_info/clustering_PCA")
+library("dplyr")
+library(ggplot2)
+library(tidyr)
+library(Hmisc)
+```
+
+# Sample overview
+
+## Data import
+
+- Importing result table(s):
+
+```{r}
+# load counts matrix
+df_counts <- read.delim("../../results/prepare/all_counts.tsv")
+df_counts <- tidyr::pivot_longer(df_counts,
+    cols = 3:ncol(df_counts),
+    names_to = "sample", values_to = "n_reads"
+)
+# sort
+df_counts <- arrange(df_counts, sample)
+print("Import of counts table complete.")
+```
+
+## Sample table
+
+- overview of samples
+
+```{r}
+# list of samples + generic options
+list_samples <- unique(df_counts$sample)
+figwidth <- 9
+figheight <- round(1 + (length(list_samples) / 4))
+figheight2 <- 3 * figheight
+
+# output sample table
+test <- df_counts %>%
+    dplyr::group_by(sample) %>%
+    dplyr::summarize(
+        barcodes = length(unique(sgRNA)),
+        total_reads = sum(n_reads, na.rm = TRUE),
+        min_reads = min(n_reads, na.rm = TRUE),
+        mean_reads = mean(n_reads, na.rm = TRUE),
+        max_reads = max(n_reads, na.rm = TRUE),
+    )
+```
+
+# Quality control
+
+```{r, warning = FALSE}
+# define a custom ggplot2 theme (just for prettiness)
+# custom ggplot2 theme that is reused for all later plots
+custom_colors <- c("#E7298A", "#66A61E", "#E6AB02", "#7570B3", "#B3B3B3", "#1B9E77", "#D95F02", "#A6761D")
+custom_range <- function(n = 5) {
+    colorRampPalette(custom_colors[c(1, 5, 2)])(n)
+}
+
+custom_theme <- function(base_size = 12, base_line_size = 1.0, base_rect_size = 1.0, ...) {
+    theme_light(base_size = base_size, base_line_size = base_line_size, base_rect_size = base_rect_size) + theme(
+        title = element_text(colour = grey(0.4), size = 10),
+        plot.margin = unit(c(12, 12, 12, 12), "points"),
+        axis.ticks.length = unit(0.2, "cm"),
+        axis.ticks = element_line(colour = grey(0.4), linetype = "solid", lineend = "round"),
+        axis.text.x = element_text(colour = grey(0.4), size = 10),
+        axis.text.y = element_text(colour = grey(0.4), size = 10),
+        panel.grid.major = element_line(size = 0.6, linetype = "solid", colour = grey(0.9)),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(linetype = "solid", colour = grey(0.4), fill = NA, size = 1.0),
+        panel.background = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_text(colour = grey(0.4), size = 10, margin = unit(rep(3, 4), "points")),
+        legend.text = element_text(colour = grey(0.4), size = 10),
+        legend.title = element_blank(),
+        legend.background = element_blank(),
+        ...
+    )
+}
+```
+
+## Sample and replicate correlation coefficent (R)
+
+```{r, fig.width = 7.5, fig.height = 7, warning = FALSE}
+p <- df_counts %>%
+    tidyr::pivot_wider(names_from = "sample", values_from = "n_reads") %>%
+    dplyr::select(-c(1:2)) %>%
+    cor() %>%
+    dplyr::as_tibble() %>%
+    dplyr::mutate(sample1 = colnames(.)) %>%
+    tidyr::pivot_longer(
+        cols = !sample1,
+        names_to = "sample2", values_to = "cor_coef"
+    ) %>%
+    ggplot(aes(x = sample1, y = sample2, fill = cor_coef)) +
+    geom_tile() +
+    geom_text(color = grey(0.4), aes(label = round(cor_coef, 2))) +
+    custom_theme() +
+    labs(title = "", x = "", y = "") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+    scale_fill_gradientn(
+        colours = c(custom_colors[1], grey(0.9), custom_colors[2]),
+        limits = c(-1, 1)
+    )
+p
+ggsave("correlation_samples.pdf", plot=p, width=18, height=18, units="cm")
+```
+
+## Sample and replicate similarity with PCA
+
+```{r, fig.width = 7, fig.height = 7, warning = FALSE}
+pca_result <- df_counts %>%
+    tidyr::pivot_wider(names_from = "sample", values_from = "n_reads") %>%
+    dplyr::select(-c(1:2)) %>%
+    as.matrix() %>%
+    t() %>%
+    replace(., is.na(.), 0) %>%
+    prcomp()
+
+df_PCA <- pca_result$x %>%
+    as_tibble(rownames = "sample")
+
+p <- df_PCA %>%
+    ggplot(aes(x = PC1, y = -PC2, size = PC3, color = sample, label = sample)) +
+    geom_point(alpha = 0.7) +
+    geom_text(size = 2.5, show.legend = FALSE) +
+    labs(
+        title = "PCA, first three principal components",
+        subtitle = "Point size encodes PC3", x = "PC1", y = "PC2"
+    ) +
+    custom_theme(legend.position = 0, aspect = 1) +
+    scale_color_manual(values = colorRampPalette(custom_colors)(nrow(df_PCA))) +
+    guides(size = "none")
+
+p
+ggsave("PCA.pdf", plot=p, width=18, height=18, units="cm")
+
+```
+
+# Report info
+
+This analysis is based on code by Michael Jahn (Science For Life Laboratory (KTH), Stockholm, Sweden; Max-Planck-Unit for the Science of Pathogens, Berlin, Germany), which is part of the nf-core-crispriscreen pipeline (https://github.com/MPUSP/nf-core-crispriscreen)
+
+Date: 2024-01-29
+
+Author: Ute Hoffmann (SciLifeLab, Stockholm, Sweden)
+
+# Session Info
+
+```{r}
+sessionInfo()
+```

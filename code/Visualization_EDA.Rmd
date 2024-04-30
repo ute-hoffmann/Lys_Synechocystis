@@ -199,6 +199,10 @@ In a next step, we tried to check which GO terms or KEGG pathways show a diverge
 df_difference <- unique(subset(DESeq_result_table, DESeq_result_table$time==8 & !is.na(DESeq_result_table$locus))[,c("condition", "wmean_fitness", "locus")])
 df_difference_wide <- pivot_wider(df_difference, names_from=condition, values_from=wmean_fitness)
 df_difference_wide$difference <- df_difference_wide$BG11_Control - df_difference_wide$BG11_Lys
+write_tsv(df_difference_wide, file="../R_results/fitness_difference_table.tsv")
+
+df_difference_wide_annotated <- df_difference_wide %>% left_join(annotation_2)
+write.csv(df_difference_wide_annotated, "../R_results/fitness_values_differneces_annotated.csv")
 
 geneList <- df_difference_wide$difference
 names(geneList) <- df_difference_wide$locus
