@@ -81,6 +81,7 @@ df_red_wide <- pivot_wider(df_reduced_info, names_from=condition, values_from=c(
 write_tsv(df_red_wide, file="../R_results/Wide_DESeq_result_table.tsv")
 ```
 
+
 ## Visualization
 
 The weighted mean fitness value combines the values of the different sgRNAs targeting the same gene.
@@ -98,21 +99,58 @@ df_red_wide <- pivot_wider(df_red_no_ncRNAs,names_from="condition", values_from=
 ```{r fitness-fitness-plots-function, echo=FALSE}
 plot_fitness_fitness <- function(df_input, y_axis, y_axis_label, x_axis="BG11_Control", x_axis_label="Weighted mean fitness BG11 Control", filename_save="../R_results/wfitnes_plot.pdf"){
   df_input$diff <- "NO"
-  df_input$diff[(df_input[[x_axis]] - df_input[[y_axis]] > 2.5) | (df_input[[x_axis]] - df_input[[y_axis]] < (-2.5))] <- "YES"
+  df_input$diff[(df_input[[x_axis]] - df_input[[y_axis]] > 2) | (df_input[[x_axis]] - df_input[[y_axis]] < (-2))] <- "YES"
   # prepare labels for plot
   df_input$delabel <- NA
   df_input$delabel[df_input$diff !="NO"] <- df_input$sgRNA_target[df_input$diff != "NO"]
   mycolors <- c("darkblue",  "#d3d3d3b2")
   names(mycolors) <- c("YES", "NO")
   p <- ggplot(data=df_input, aes(x=eval(parse(text=x_axis)), y=eval(parse(text=y_axis)), label=delabel,col=diff)) + geom_point(alpha=0.5, show.legend = FALSE) + 
-    theme_light() + labs(y=y_axis_label, x=x_axis_label) + theme(legend.position = "none") + geom_abline(intercept=0,slope=1,linetype="dashed",color="black") + geom_abline(intercept=-2.5, slope=1, linetype="dashed", color="black") + geom_abline(intercept=2.5, slope=1, linetype="dashed", color="black") + scale_colour_manual(values = mycolors) + geom_text_repel(fontface="italic") #+ xlim(-6, +7) +ylim(-6,+7)
+    theme_light() + labs(y=y_axis_label, x=x_axis_label) + theme(legend.position = "none") + geom_abline(intercept=0,slope=1,linetype="dashed",color="black") + geom_abline(intercept=-2, slope=1, linetype="dashed", color="black") + geom_abline(intercept=2, slope=1, linetype="dashed", color="black") + scale_colour_manual(values = mycolors) + geom_text_repel(fontface="italic") #+ xlim(-6, +7) +ylim(-6,+7)
   ggsave(filename = filename_save, plot=p, width=12, height=12, units="cm")
 return(p)
 }
 ```
 
 ```{r fitness-fitness-plots}
-plot_fitness_fitness(df_red_wide, "BG11_Lys", y_axis_label="Weighted mean fitness lysine", filename_save = "../R_results/Lys_control_wfitness.pdf")
+p <- plot_fitness_fitness(df_red_wide, "BG11_Lys", y_axis_label="Weighted mean fitness lysine", filename_save = "../R_results/Lys_control_wfitness.pdf")
+ggsave(filename = "../R_results/Lys_control_wfitness_gigantic.pdf", plot=p, width=24, height=24, units="cm")
+```
+
+```{r fitness-fitness-plots-2}
+plot_fitness_fitness <- function(df_input, y_axis, y_axis_label, x_axis="BG11_Control", x_axis_label="Weighted mean fitness BG11 Control", filename_save="../R_results/wfitnes_plot.pdf"){
+  df_input$diff <- "NO"
+  df_input$diff[(df_input[[x_axis]] - df_input[[y_axis]] > 2) | (df_input[[x_axis]] - df_input[[y_axis]] < (-2))] <- "YES"
+  mycolors <- c("darkblue",  "#d3d3d3b2")
+  names(mycolors) <- c("YES", "NO")
+  p <- ggplot(data=df_input, aes(x=eval(parse(text=x_axis)), y=eval(parse(text=y_axis)),col=diff)) + geom_point(alpha=0.5, show.legend = FALSE) + 
+    theme_light() + labs(y=y_axis_label, x=x_axis_label) + theme(legend.position = "none") + geom_abline(intercept=0,slope=1,linetype="dashed",color="black") + geom_abline(intercept=-2, slope=1, linetype="dashed", color="black") + geom_abline(intercept=2, slope=1, linetype="dashed", color="black") + scale_colour_manual(values = mycolors) #+ xlim(-6, +7) +ylim(-6,+7)
+  ggsave(filename = filename_save, plot=p, width=12, height=12, units="cm")
+return(p)
+}
+
+plot_fitness_fitness(df_red_wide, "BG11_Lys", y_axis_label="Weighted mean fitness lysine", filename_save = "../R_results/Lys_control_wfitness_noLabels.pdf")
+```
+
+```{r subset_interesting_genes}
+genes <- c("ssr0692", "slr1214", "slr1735", "sll1200", "slr0262", "slr5017", "sll0062", "slr0269", "ssl1807", "slr1935", "abfB", "slr0579", "ssr0692", "sll0556", "slr0096", "glnH/glnP", "slr1712", "slr0007", "slr1763", "hisA", "pilT", "slr1213")
+
+plot_fitness_fitness <- function(df_input, y_axis, y_axis_label, x_axis="BG11_Control", x_axis_label="Weighted mean fitness BG11 Control", filename_save="../R_results/wfitnes_plot.pdf"){
+  df_input$diff <- "NO"
+  df_input$diff[(df_input[[x_axis]] - df_input[[y_axis]] > 2) | (df_input[[x_axis]] - df_input[[y_axis]] < (-2))] <- "YES"
+  # prepare labels for plot
+  df_input$delabel <- NA
+  df_input$delabel[df_input$diff !="NO"] <- df_input$sgRNA_target[df_input$diff != "NO"]
+  df_input$diff[df_input$sgRNA_target %in% genes] <- "important"
+  mycolors <- c("darkblue",  "#d3d3d3b2", "orange")
+  names(mycolors) <- c("YES", "NO", "important")
+  p <- ggplot(data=df_input, aes(x=eval(parse(text=x_axis)), y=eval(parse(text=y_axis)), label=delabel,col=diff)) + geom_point(alpha=0.5, show.legend = FALSE) + 
+    theme_light() + labs(y=y_axis_label, x=x_axis_label) + theme(legend.position = "none") + geom_abline(intercept=0,slope=1,linetype="dashed",color="black") + geom_abline(intercept=-2, slope=1, linetype="dashed", color="black") + geom_abline(intercept=2, slope=1, linetype="dashed", color="black") + scale_colour_manual(values = mycolors) + geom_text_repel(fontface="italic") #+ xlim(-6, +7) +ylim(-6,+7)
+  ggsave(filename = filename_save, plot=p, width=12, height=12, units="cm")
+return(p)
+}
+
+plot_fitness_fitness(df_red_wide, "BG11_Lys", y_axis_label="Weighted mean fitness lysine", filename_save = "../R_results/Lys_control_wfitness_genesFromTable_orange.pdf")
 ```
 
 ### ncRNAs
